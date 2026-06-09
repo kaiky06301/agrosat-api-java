@@ -28,8 +28,8 @@ estimada, previsão de chuva) com **sensores ESP32 no campo** (umidade do solo, 
 |------|------|
 | 🌐 **Deploy público (Swagger)** | https://agrosat-api-566067.azurewebsites.net/swagger-ui/index.html |
 | 📄 **Documentação da API (OpenAPI)** | https://agrosat-api-566067.azurewebsites.net/v3/api-docs |
-| 🎥 **Vídeo de apresentação (YouTube)** | _COLE_AQUI_O_LINK_ |
-| 🎤 **Vídeo Pitch (YouTube)** | _COLE_AQUI_O_LINK_ |
+| 🎥 **Vídeo de apresentação (YouTube)** | https://youtu.be/pcSSx7eJQ9g |
+| 🎤 **Vídeo Pitch (YouTube)** | https://youtu.be/D5cTgb1hQpg |
 | 💻 **Repositório** | https://github.com/kaiky06301/agrosat-api-java |
 | 🧪 **Coleção Postman** | [`postman/AgroSat.postman_collection.json`](postman/AgroSat.postman_collection.json) |
 
