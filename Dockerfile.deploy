@@ -1,0 +1,20 @@
+# ============================================================
+# AgroSat — imagem de deploy (App Service / nuvem, linux/amd64)
+# Empacota o jar JA compilado (mvn package) sobre uma JRE 17.
+# O Dockerfile multi-stage principal (./Dockerfile) segue o
+# padrao da aula (build dentro do container). Este aqui e so
+# para o push rapido para o Azure sem emular o build em amd64.
+# ============================================================
+FROM eclipse-temurin:17-jre
+
+# usuario nao-root (boa pratica, igual ao padrao da aula: userapp)
+RUN useradd -r -u 1001 -m userapp
+WORKDIR /app
+
+COPY target/agrosat-api-1.0.0.jar app.jar
+RUN chown -R userapp:userapp /app
+USER userapp
+
+EXPOSE 8080
+ENV JAVA_OPTS="-Xms256m -Xmx512m"
+CMD ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
