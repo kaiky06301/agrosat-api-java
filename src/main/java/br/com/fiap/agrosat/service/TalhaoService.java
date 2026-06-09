@@ -55,10 +55,17 @@ public class TalhaoService {
         t.setAreaHa(req.areaHa());
         t.setIdPropriedade(req.idPropriedade());
         t.setIdCultura(req.idCultura());
+        t.setCultura(req.cultura());
+        t.setUmidadeAtual(req.umidadeAtual());
+        t.setUmidadeIdealMin(req.umidadeIdealMin());
+        t.setUmidadeIdealMax(req.umidadeIdealMax());
+        t.setNdvi(req.ndvi());
     }
 
     private TalhaoResponse toResponse(Talhao t) {
         return new TalhaoResponse(t.getId(), t.getNome(), t.getAreaHa(),
-                t.getIdPropriedade(), t.getIdCultura());
+                t.getIdPropriedade(), t.getIdCultura(),
+                t.getCultura(), t.getUmidadeAtual(), t.getUmidadeIdealMin(),
+                t.getUmidadeIdealMax(), t.getNdvi());
     }
 }

@@ -9,6 +9,8 @@ public record AlertaAgricolaRequest(
         @NotNull(message = "idTalhao e obrigatorio")
         Long idTalhao,
 
+        Long idPropriedade,
+
         @Pattern(regexp = "SECA|GEADA|EXCESSO_UMIDADE|RISCO_CLIMATICO",
                 message = "tipo invalido")
         String tipo,

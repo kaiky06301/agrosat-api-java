@@ -7,6 +7,11 @@ public record TalhaoResponse(
         String nome,
         BigDecimal areaHa,
         Long idPropriedade,
-        Long idCultura
+        Long idCultura,
+        String cultura,
+        BigDecimal umidadeAtual,
+        BigDecimal umidadeIdealMin,
+        BigDecimal umidadeIdealMax,
+        BigDecimal ndvi
 ) {
 }

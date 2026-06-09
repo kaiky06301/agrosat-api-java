@@ -16,6 +16,10 @@ public class AlertaAgricola {
     @Column(name = "id_talhao", nullable = false)
     private Long idTalhao;
 
+    // Facilita o filtro por fazenda no app mobile (denormalizado do talhao).
+    @Column(name = "id_propriedade")
+    private Long idPropriedade;
+
     @Column(name = "tipo", length = 30)
     private String tipo;
 
@@ -46,6 +50,9 @@ public class AlertaAgricola {
 
     public Long getIdTalhao() { return idTalhao; }
     public void setIdTalhao(Long idTalhao) { this.idTalhao = idTalhao; }
+
+    public Long getIdPropriedade() { return idPropriedade; }
+    public void setIdPropriedade(Long idPropriedade) { this.idPropriedade = idPropriedade; }
 
     public String getTipo() { return tipo; }
     public void setTipo(String tipo) { this.tipo = tipo; }

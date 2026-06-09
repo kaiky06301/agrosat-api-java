@@ -4,6 +4,8 @@ public record LoginResponse(
         String token,
         String tipo,
         String email,
+        Long idUsuario,
+        String nome,
         long expiraEm
 ) {
 }

@@ -14,8 +14,12 @@ public class LeituraSensor {
     @Column(name = "id_leitura")
     private Long id;
 
-    @Column(name = "id_sensor", nullable = false)
+    @Column(name = "id_sensor")
     private Long idSensor;
+
+    // O app mobile registra a leitura diretamente por TALHAO (sem precisar do sensor).
+    @Column(name = "id_talhao")
+    private Long idTalhao;
 
     @Column(name = "umidade_solo", precision = 5, scale = 2)
     private BigDecimal umidadeSolo;
@@ -44,6 +48,9 @@ public class LeituraSensor {
 
     public Long getIdSensor() { return idSensor; }
     public void setIdSensor(Long idSensor) { this.idSensor = idSensor; }
+
+    public Long getIdTalhao() { return idTalhao; }
+    public void setIdTalhao(Long idTalhao) { this.idTalhao = idTalhao; }
 
     public BigDecimal getUmidadeSolo() { return umidadeSolo; }
     public void setUmidadeSolo(BigDecimal umidadeSolo) { this.umidadeSolo = umidadeSolo; }

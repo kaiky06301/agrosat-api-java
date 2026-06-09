@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 public record LeituraSensorResponse(
         Long id,
         Long idSensor,
+        Long idTalhao,
         BigDecimal umidadeSolo,
         BigDecimal temperatura,
         BigDecimal umidadeAr,

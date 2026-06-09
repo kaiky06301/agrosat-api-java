@@ -15,6 +15,12 @@ public record TalhaoRequest(
         @NotNull(message = "idPropriedade e obrigatorio")
         Long idPropriedade,
 
-        Long idCultura
+        Long idCultura,
+
+        String cultura,
+        BigDecimal umidadeAtual,
+        BigDecimal umidadeIdealMin,
+        BigDecimal umidadeIdealMax,
+        BigDecimal ndvi
 ) {
 }

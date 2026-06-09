@@ -52,6 +52,7 @@ public class LeituraSensorService {
 
     private void aplicar(LeituraSensor l, LeituraSensorRequest req) {
         l.setIdSensor(req.idSensor());
+        l.setIdTalhao(req.idTalhao());
         l.setUmidadeSolo(req.umidadeSolo());
         l.setTemperatura(req.temperatura());
         l.setUmidadeAr(req.umidadeAr());
@@ -62,7 +63,7 @@ public class LeituraSensorService {
     }
 
     private LeituraSensorResponse toResponse(LeituraSensor l) {
-        return new LeituraSensorResponse(l.getId(), l.getIdSensor(), l.getUmidadeSolo(),
+        return new LeituraSensorResponse(l.getId(), l.getIdSensor(), l.getIdTalhao(), l.getUmidadeSolo(),
                 l.getTemperatura(), l.getUmidadeAr(), l.getLuminosidade(), l.getDataHora());
     }
 }

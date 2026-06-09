@@ -25,6 +25,23 @@ public class Talhao {
     @Column(name = "id_cultura")
     private Long idCultura;
 
+    // Campos de exibicao usados pelo app mobile (cultura por nome, umidade atual,
+    // faixa ideal e NDVI). Persistidos para o app fazer o round-trip via API.
+    @Column(name = "cultura", length = 60)
+    private String cultura;
+
+    @Column(name = "umidade_atual", precision = 5, scale = 2)
+    private BigDecimal umidadeAtual;
+
+    @Column(name = "umidade_ideal_min", precision = 5, scale = 2)
+    private BigDecimal umidadeIdealMin;
+
+    @Column(name = "umidade_ideal_max", precision = 5, scale = 2)
+    private BigDecimal umidadeIdealMax;
+
+    @Column(name = "ndvi", precision = 4, scale = 2)
+    private BigDecimal ndvi;
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -39,4 +56,19 @@ public class Talhao {
 
     public Long getIdCultura() { return idCultura; }
     public void setIdCultura(Long idCultura) { this.idCultura = idCultura; }
+
+    public String getCultura() { return cultura; }
+    public void setCultura(String cultura) { this.cultura = cultura; }
+
+    public BigDecimal getUmidadeAtual() { return umidadeAtual; }
+    public void setUmidadeAtual(BigDecimal umidadeAtual) { this.umidadeAtual = umidadeAtual; }
+
+    public BigDecimal getUmidadeIdealMin() { return umidadeIdealMin; }
+    public void setUmidadeIdealMin(BigDecimal umidadeIdealMin) { this.umidadeIdealMin = umidadeIdealMin; }
+
+    public BigDecimal getUmidadeIdealMax() { return umidadeIdealMax; }
+    public void setUmidadeIdealMax(BigDecimal umidadeIdealMax) { this.umidadeIdealMax = umidadeIdealMax; }
+
+    public BigDecimal getNdvi() { return ndvi; }
+    public void setNdvi(BigDecimal ndvi) { this.ndvi = ndvi; }
 }

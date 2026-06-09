@@ -1,12 +1,12 @@
 package br.com.fiap.agrosat.dto;
 
-import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public record LeituraSensorRequest(
-        @NotNull(message = "idSensor e obrigatorio")
+        // idSensor OU idTalhao (o app mobile envia por talhao)
         Long idSensor,
+        Long idTalhao,
 
         BigDecimal umidadeSolo,
         BigDecimal temperatura,

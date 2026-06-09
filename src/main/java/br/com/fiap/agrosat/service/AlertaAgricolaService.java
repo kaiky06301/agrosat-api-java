@@ -52,6 +52,7 @@ public class AlertaAgricolaService {
 
     private void aplicar(AlertaAgricola a, AlertaAgricolaRequest req) {
         a.setIdTalhao(req.idTalhao());
+        a.setIdPropriedade(req.idPropriedade());
         a.setTipo(req.tipo());
         a.setSeveridade(req.severidade());
         a.setMensagem(req.mensagem());
@@ -64,7 +65,7 @@ public class AlertaAgricolaService {
     }
 
     private AlertaAgricolaResponse toResponse(AlertaAgricola a) {
-        return new AlertaAgricolaResponse(a.getId(), a.getIdTalhao(), a.getTipo(), a.getSeveridade(),
-                a.getMensagem(), a.getDataHora(), a.getResolvido());
+        return new AlertaAgricolaResponse(a.getId(), a.getIdTalhao(), a.getIdPropriedade(), a.getTipo(),
+                a.getSeveridade(), a.getMensagem(), a.getDataHora(), a.getResolvido());
     }
 }
