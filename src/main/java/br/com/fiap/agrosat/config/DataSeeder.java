@@ -9,11 +9,12 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 /**
- * Cria um usuario de teste apenas no perfil H2, para permitir login imediato.
+ * Cria um usuario de teste nos perfis H2 e Postgres, para permitir login imediato
+ * apos subir a aplicacao (inclusive no deploy em nuvem com banco vazio).
  * Login: admin@agrosat.com.br / senha: 123456
  */
 @Configuration
-@Profile("h2")
+@Profile({"h2", "postgres"})
 public class DataSeeder {
 
     @Bean

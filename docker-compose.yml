@@ -1,18 +1,22 @@
 # ============================================================
 # AgroSat — Docker Compose (deploy na nuvem: VM Linux Azure)
 # 2 containers: app (API Java Spring Boot) + db (PostgreSQL)
+# Mesma rede Docker, volume nomeado, RM (566067) no nome dos containers.
 # Sobe com:  docker compose up -d --build
 # ============================================================
 services:
   db:
     image: postgres:16-alpine
-    container_name: agrosat-db
+    container_name: agrosat-db-566067
+    networks: [agrosat-net-566067]
     environment:
       POSTGRES_DB: agrosat
       POSTGRES_USER: agrosat
       POSTGRES_PASSWORD: agrosat2026
+    ports:
+      - "5432:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pgdata-566067:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U agrosat"]
       interval: 10s
@@ -22,19 +26,27 @@ services:
 
   app:
     build: .
-    container_name: agrosat-api
+    image: agrosat-api:566067
+    container_name: agrosat-app-566067
+    networks: [agrosat-net-566067]
     depends_on:
       db:
         condition: service_healthy
     environment:
       SPRING_PROFILES_ACTIVE: postgres
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/agrosat
+      SPRING_DATASOURCE_URL: jdbc:postgresql://agrosat-db-566067:5432/agrosat
       SPRING_DATASOURCE_USERNAME: agrosat
       SPRING_DATASOURCE_PASSWORD: agrosat2026
       AGROSAT_JWT_SECRET: 51ad19a8fdcf9c604048c75f77107d1b06d3b21b1474dbe33393c8821eedf332
+      JAVA_OPTS: "-Xms128m -Xmx384m"
     ports:
       - "8080:8080"
     restart: unless-stopped
 
+networks:
+  agrosat-net-566067:
+    name: agrosat-net-566067
+
 volumes:
-  pgdata:
+  pgdata-566067:
+    name: pgdata-566067
