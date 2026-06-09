@@ -1,10 +1,28 @@
-# AgroSat — API Java (Spring Boot 3)
+# 🛰️🌱 AgroSat — API Java (Spring Boot 3)
 
-API REST da disciplina **Java Advanced** (Global Solution FIAP 2026/1).
-**AgroSat** é agricultura de precisão: cruza dados de satélite (NDVI, umidade estimada, chuva)
-com sensores ESP32 no campo (umidade do solo, temperatura) e aciona irrigação/alertas. ODS 2, 8, 9, 13.
+API REST da disciplina **Java Advanced** — Global Solution FIAP 2026/1 (tema: **economia espacial**).
+**AgroSat** é uma solução de **agricultura de precisão**: cruza **dados de satélite** (NDVI, umidade
+estimada, previsão de chuva) com **sensores ESP32 no campo** (umidade do solo, temperatura) e gera
+**alertas e recomendações de irrigação** por talhão. ODS 2, 8, 9 e 13.
 
-## 📌 Links da entrega (Java Advanced)
+---
+
+## 📑 Sumário
+1. [Links da entrega](#-links-da-entrega)
+2. [Proposta da solução](#-proposta-da-solução)
+3. [Funcionalidades do sistema](#-funcionalidades-do-sistema)
+4. [Arquitetura](#️-arquitetura)
+5. [Diagrama de Classes](#-diagrama-de-classes)
+6. [Diagrama Entidade-Relacionamento (ER)](#️-diagrama-entidade-relacionamento-er)
+7. [Endpoints da API](#-endpoints-da-api)
+8. [Testes (Postman)](#-testes-postman)
+9. [Como executar](#️-como-executar)
+10. [DevOps — rodar em nuvem (2 containers)](#-devops--rodar-em-nuvem-2-containers)
+11. [Tecnologias](#️-tecnologias)
+
+---
+
+## 📌 Links da entrega
 
 | Item | Link |
 |------|------|
@@ -13,171 +31,385 @@ com sensores ESP32 no campo (umidade do solo, temperatura) e aciona irrigação/
 | 🎥 **Vídeo de apresentação (YouTube)** | _COLE_AQUI_O_LINK_ |
 | 🎤 **Vídeo Pitch (YouTube)** | _COLE_AQUI_O_LINK_ |
 | 💻 **Repositório** | https://github.com/kaiky06301/agrosat-api-java |
+| 🧪 **Coleção Postman** | [`postman/AgroSat.postman_collection.json`](postman/AgroSat.postman_collection.json) |
 
-**Login de teste:** `admin@agrosat.com.br` / `123456` · Detalhes do deploy em [`DEPLOY-NUVEM.md`](DEPLOY-NUVEM.md).
+**Login de teste:** `admin@agrosat.com.br` / `123456`
 
-**Tecnologias:** Java 17 · Spring Boot 3.3 · Spring Data JPA · Spring Security + JWT · Spring HATEOAS ·
-Bean Validation · Lombok · Spring Boot DevTools · springdoc/OpenAPI · Maven · Docker · PostgreSQL/H2/Oracle.
+---
 
-## Stack
+## 🎯 Proposta da solução
 
-- Java 17, Spring Boot 3.3, Maven
-- Spring Data JPA / Hibernate (Oracle FIAP)
-- Spring Security + JWT (jjwt)
-- Bean Validation (DTOs como `record`)
-- Swagger / OpenAPI (springdoc)
+O produtor rural não consegue saber, no olho, qual parte da fazenda está com sede — e água é o maior
+custo e risco do agronegócio. O **AgroSat** resolve isso unindo **dois olhares**:
 
-## Arquitetura (pacote `br.com.fiap.agrosat`)
+- **De cima (satélite):** NDVI (saúde da planta), umidade estimada e previsão de chuva por talhão.
+- **De baixo (IoT/ESP32):** umidade do solo, temperatura e luminosidade medidas no campo.
+
+A **API Java** recebe esses dados, aplica a regra de negócio (faixa ideal por cultura) e gera
+**alertas automáticos** (seca / excesso) e **recomendações de irrigação** por talhão. O app mobile
+consome essa API; a disciplina de DevOps a conteineriza e publica em nuvem.
+
+---
+
+## ✨ Funcionalidades do sistema
+
+- **Autenticação e segurança:** login com **JWT** (Spring Security); rotas protegidas exigem token.
+- **Cadastro de usuários** (produtores) com validação de CPF/e-mail únicos.
+- **Gestão de propriedades** (fazendas) — CRUD completo, vinculadas ao usuário.
+- **Gestão de talhões** — CRUD; cada talhão pertence a uma propriedade e a uma cultura.
+- **Culturas** com faixas ideais de umidade/temperatura e ciclo (dias).
+- **Sensores e leituras** — registro de leituras de campo (umidade do solo, temperatura, etc.).
+- **Dados de satélite** — NDVI, umidade estimada e índice de chuva por talhão.
+- **Alertas agrícolas** — gerados a partir das leituras/dados (seca, excesso), com severidade.
+- **Recomendações** — orientações de irrigação ligadas a um alerta.
+- **Irrigações** — registro de eventos de irrigação (início, fim, volume, modo).
+- **Equipamentos de campo** — estações meteorológicas e controladores de irrigação (modelagem com
+  **herança**, **endereço embutido** e **telemetria com chave composta**).
+- **Documentação interativa** via Swagger/OpenAPI, **HATEOAS** (links nos recursos) e **CORS** habilitado.
+
+---
+
+## 🏗️ Arquitetura
+
+A API segue **arquitetura em camadas** (Controller → Service → Repository → Entity), com DTOs (Java
+Records) na fronteira e segurança por filtro JWT. Publicada em **nuvem (Azure)**.
+
+```mermaid
+flowchart LR
+    subgraph Clientes
+        M["📱 App Mobile<br/>(React Native)"]
+        W["🖥️ Navegador<br/>(Swagger / Postman)"]
+        I["🔌 ESP32 (IoT)"]
+        S["🛰️ Dados de Satélite"]
+    end
+
+    subgraph Nuvem["☁️ Nuvem (Azure)"]
+        direction TB
+        API["☕ API Java — Spring Boot<br/>REST :8080 • JWT • Swagger"]
+        DB[("🗄️ Banco de Dados<br/>PostgreSQL / Oracle / H2")]
+        API -->|"Spring Data JPA / JDBC"| DB
+    end
+
+    M -->|"HTTP/REST + JWT"| API
+    W -->|"HTTP/REST + JWT"| API
+    I -->|"POST leituras (Wi-Fi)"| API
+    S -->|"POST dados-satelite"| API
+```
+
+**Camadas (pacote `br.com.fiap.agrosat`):**
 
 ```
-entity/       -> 10 entidades JPA (espelham as tabelas Oracle do database/01_ddl.sql)
+controller/   -> endpoints REST (/api/...), HATEOAS nos recursos
+service/      -> regras de negócio e mapeamento DTO <-> entidade
 repository/   -> Spring Data JPA (JpaRepository)
-dto/          -> Records de Request/Response + validação
-service/      -> regras e mapeamento DTO <-> entidade
-controller/   -> endpoints REST /api/...
+entity/       -> entidades JPA (tabelas + modelagem avançada)
+dto/          -> Java Records de Request/Response + Bean Validation
 security/     -> JwtService, filtro JWT, UserDetailsService
-config/       -> SecurityConfig, OpenApiConfig, DataSeeder (perfil h2)
-exception/    -> tratamento global de erros
-```
-
-### As 10 entidades / recursos
-
-| Entidade        | Recurso REST          |
-|-----------------|-----------------------|
-| Usuario         | `/api/usuarios`       |
-| Propriedade     | `/api/propriedades`   |
-| Talhao          | `/api/talhoes`        |
-| Cultura         | `/api/culturas`       |
-| Sensor          | `/api/sensores`       |
-| LeituraSensor   | `/api/leituras`       |
-| DadoSatelite    | `/api/dados-satelite` |
-| AlertaAgricola  | `/api/alertas`        |
-| Recomendacao    | `/api/recomendacoes`  |
-| Irrigacao       | `/api/irrigacoes`     |
-
-Cada recurso expõe: `GET /` (lista), `GET /{id}`, `POST /`, `PUT /{id}`, `DELETE /{id}`.
-JSON em camelCase, datas em ISO-8601 (segue o `CONTRATO-DOMINIO.md`).
-
-## Como rodar
-
-### Opção A — teste rápido (H2 em memória, sem precisar do Oracle)
-
-```bash
-mvn spring-boot:run -Dspring-boot.run.profiles=h2
-```
-
-- Não precisa de banco; o Hibernate cria as tabelas e um usuário de teste é criado automaticamente.
-- Login de teste: **admin@agrosat.com.br** / senha **123456**
-- Console do banco: http://localhost:8080/h2-console (JDBC URL: `jdbc:h2:mem:agrosat`)
-
-### Opção B — Oracle FIAP (perfil padrão)
-
-1. Edite `src/main/resources/application-oracle.properties` e preencha:
-   - `spring.datasource.url` (ex.: `jdbc:oracle:thin:@oracle.fiap.com.br:1521:ORCL`)
-   - `spring.datasource.username` (seu RM)
-   - `spring.datasource.password`
-2. Rode o `database/01_ddl.sql` e o `02_dml.sql` no Oracle (tabelas já existem).
-3. Suba a aplicação:
-
-```bash
-mvn spring-boot:run
-```
-
-## Autenticação (JWT)
-
-1. Faça login:
-
-```bash
-curl -X POST http://localhost:8080/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"admin@agrosat.com.br","senha":"123456"}'
-```
-
-Resposta:
-
-```json
-{ "token": "eyJhbGciOi...", "tipo": "Bearer", "email": "admin@agrosat.com.br", "expiraEm": 86400000 }
-```
-
-2. Use o token nas demais chamadas:
-
-```bash
-curl http://localhost:8080/api/talhoes \
-  -H "Authorization: Bearer SEU_TOKEN_AQUI"
-```
-
-> Observação: usuários têm a senha gravada com BCrypt. Crie usuários via `POST /api/usuarios`
-> (esse endpoint também exige token; no perfil H2 use o admin de teste para criar os demais).
-
-## Swagger / OpenAPI
-
-- UI: http://localhost:8080/swagger-ui.html
-- JSON: http://localhost:8080/v3/api-docs
-- No Swagger, clique em **Authorize** e cole o token (sem o prefixo `Bearer`).
-
-## O que o Kaiky ainda precisa fazer manualmente
-
-- [ ] **Credenciais Oracle**: preencher URL, usuário (RM) e senha em `application-oracle.properties`.
-- [ ] **Segredo JWT**: trocar `agrosat.jwt.secret` no `application.properties` por uma chave própria (>= 32 caracteres).
-- [ ] **Deploy público** (requisito da entrega): subir em **Render** ou **Railway**
-      (ambos têm plano gratuito e fazem build Maven). Configure as variáveis de ambiente do banco
-      e exponha a porta 8080. Dica: gerar o `.jar` com `mvn clean package` e usar um `Dockerfile`
-      `eclipse-temurin:17-jdk` se preferir container.
-- [ ] **Vídeo de 10 min**: demonstrar CRUD + login JWT + Swagger rodando (de preferência no deploy público).
-- [ ] **Pitch de 3 min**: problema (agricultura/água/clima), solução AgroSat e ODS 2, 8, 9, 13.
-- [ ] (Opcional) Criar usuários reais via `POST /api/usuarios` e validar as FKs com dados do `02_dml.sql`.
+config/       -> SecurityConfig (CORS), OpenApiConfig, DataSeeder
+exception/    -> tratamento global de erros (respostas padronizadas)
 ```
 
 ---
 
-# 🐳 DevOps Tools & Cloud Computing — How to (rodar em nuvem)
+## 🧩 Diagrama de Classes
 
-> Disciplina **DevOps & Cloud**. Ambiente **conteinerizado** com **2 containers Docker** (API + banco)
-> rodando em **VM Linux na Microsoft Azure** (NÃO localhost). Imagem da aplicação gerada via Dockerfile.
+Relacionamentos do domínio + **modelagem avançada** (herança em `Equipamento`, `@Embedded Endereco`,
+chave composta em `RegistroEquipamento`).
 
-## Descrição da solução
-**AgroSat** é uma solução de **agricultura de precisão**: cruza **dados de satélite** (NDVI, umidade
-estimada, previsão de chuva) com **sensores ESP32 no campo** (umidade do solo, temperatura) e gera
-**alertas e recomendações de irrigação** por talhão. Esta entrega **conteineriza a API Java** e a sobe
-na nuvem junto de um banco **PostgreSQL**, ambos em containers Docker na mesma rede. ODS 2, 8, 9, 13.
+```mermaid
+classDiagram
+    class Usuario {
+        +Long id
+        +String nome
+        +String cpf
+        +String email
+    }
+    class Propriedade {
+        +Long id
+        +String nome
+        +BigDecimal areaTotalHa
+        +String municipio
+    }
+    class Talhao {
+        +Long id
+        +String nome
+        +BigDecimal areaHa
+    }
+    class Cultura {
+        +Long id
+        +String nome
+        +BigDecimal umidadeIdealMin
+        +BigDecimal umidadeIdealMax
+    }
+    class Sensor {
+        +Long id
+        +String codigo
+        +String tipo
+    }
+    class LeituraSensor {
+        +Long id
+        +BigDecimal umidadeSolo
+        +BigDecimal temperatura
+    }
+    class DadoSatelite {
+        +Long id
+        +BigDecimal ndvi
+        +BigDecimal umidadeEstimada
+    }
+    class AlertaAgricola {
+        +Long id
+        +String tipo
+        +String severidade
+        +boolean resolvido
+    }
+    class Recomendacao {
+        +Long id
+        +String tipo
+        +String texto
+    }
+    class Irrigacao {
+        +Long id
+        +BigDecimal volumeLitros
+        +String modo
+    }
+    class Equipamento {
+        <<abstract>>
+        +Long id
+        +String nome
+        +Endereco endereco
+    }
+    class EstacaoMeteorologica {
+        +BigDecimal alcanceKm
+    }
+    class ControladorIrrigacao {
+        +Integer numValvulas
+    }
+    class Endereco {
+        <<embeddable>>
+        +String logradouro
+        +String municipio
+        +String uf
+        +String cep
+    }
+    class RegistroEquipamento {
+        +RegistroEquipamentoId id
+        +String status
+        +Integer bateriaPct
+    }
 
-## 🗺️ Arquitetura macro
-Diagrama (Draw.io): [`arquitetura-devops.drawio`](arquitetura-devops.drawio)
-
+    Usuario "1" --> "*" Propriedade
+    Propriedade "1" --> "*" Talhao
+    Cultura "1" --> "*" Talhao
+    Talhao "1" --> "*" Sensor
+    Sensor "1" --> "*" LeituraSensor
+    Talhao "1" --> "*" DadoSatelite
+    Talhao "1" --> "*" AlertaAgricola
+    Talhao "1" --> "*" Irrigacao
+    Talhao "1" --> "*" Recomendacao
+    AlertaAgricola "1" --> "*" Recomendacao
+    Equipamento <|-- EstacaoMeteorologica
+    Equipamento <|-- ControladorIrrigacao
+    Equipamento *-- Endereco
+    Equipamento "1" --> "*" RegistroEquipamento
 ```
-                       Microsoft Azure — VM Ubuntu (northcentralus) — IP público (NÃO localhost)
-                       ┌──────────────────────────────────────────────────────────────────┐
- App Mobile  ─┐        │   rede docker: agrosat-net-566067                                  │
- Navegador   ─┼─HTTP→  │   ┌───────────────────────────┐      ┌──────────────────────────┐ │
- ESP32 (IoT) ─┤  :8080 │   │ agrosat-app-566067        │JDBC  │ agrosat-db-566067        │ │
- Satélite    ─┘        │   │ Spring Boot (imagem própria)│────→│ postgres:16 (img pública)│ │
-                       │   │ não-root: agrosat, /app    │:5432 │ volume: pgdata-566067    │ │
-                       │   │ porta 8080                 │      │ 10 tabelas + relações    │ │
-                       │   └───────────────────────────┘      └──────────────────────────┘ │
-                       └──────────────────────────────────────────────────────────────────┘
+
+---
+
+## 🗄️ Diagrama Entidade-Relacionamento (ER)
+
+```mermaid
+erDiagram
+    USUARIO ||--o{ PROPRIEDADE : possui
+    PROPRIEDADE ||--o{ TALHAO : tem
+    CULTURA ||--o{ TALHAO : classifica
+    TALHAO ||--o{ SENSOR : contem
+    SENSOR ||--o{ LEITURA_SENSOR : gera
+    TALHAO ||--o{ DADO_SATELITE : recebe
+    TALHAO ||--o{ ALERTA_AGRICOLA : aciona
+    TALHAO ||--o{ IRRIGACAO : registra
+    TALHAO ||--o{ RECOMENDACAO : recebe
+    ALERTA_AGRICOLA ||--o{ RECOMENDACAO : origina
+    EQUIPAMENTO ||--o{ REGISTRO_EQUIPAMENTO : telemetria
+
+    USUARIO {
+        bigint id_usuario PK
+        varchar cpf UK
+        varchar email UK
+        varchar nome
+        varchar senha
+    }
+    PROPRIEDADE {
+        bigint id_propriedade PK
+        varchar nome
+        numeric area_total_ha
+        bigint id_usuario FK
+    }
+    TALHAO {
+        bigint id_talhao PK
+        varchar nome
+        numeric area_ha
+        bigint id_propriedade FK
+        bigint id_cultura FK
+    }
+    CULTURA {
+        bigint id_cultura PK
+        varchar nome
+        numeric umidade_ideal_min
+        numeric umidade_ideal_max
+    }
+    SENSOR {
+        bigint id_sensor PK
+        varchar codigo
+        bigint id_talhao FK
+    }
+    LEITURA_SENSOR {
+        bigint id_leitura PK
+        numeric umidade_solo
+        bigint id_sensor FK
+    }
+    DADO_SATELITE {
+        bigint id_dado_sat PK
+        numeric ndvi
+        bigint id_talhao FK
+    }
+    ALERTA_AGRICOLA {
+        bigint id_alerta PK
+        varchar tipo
+        varchar severidade
+        bigint id_talhao FK
+    }
+    RECOMENDACAO {
+        bigint id_recomendacao PK
+        varchar texto
+        bigint id_talhao FK
+        bigint id_alerta FK
+    }
+    IRRIGACAO {
+        bigint id_irrigacao PK
+        numeric volume_litros
+        bigint id_talhao FK
+    }
+    EQUIPAMENTO {
+        bigint id_equipamento PK
+        varchar tipo_equipamento
+        varchar nome
+    }
+    REGISTRO_EQUIPAMENTO {
+        bigint id_equipamento PK
+        timestamp instante PK
+        varchar status
+    }
 ```
 
-## ▶️ How-to — do clone até os testes em nuvem
-Pré-requisitos na VM (Ubuntu): Docker. Os comandos abaixo usam o **RM 566067** no nome dos containers.
+> **Modelagem avançada (JPA):** `EQUIPAMENTO` usa **herança SINGLE_TABLE** com coluna discriminadora
+> (`tipo_equipamento`); o **Endereço** é um objeto de valor **`@Embedded`**; e `REGISTRO_EQUIPAMENTO`
+> tem **chave composta** (`@EmbeddedId` = id_equipamento + instante).
 
+---
+
+## 🔌 Endpoints da API
+
+Todos sob `/api`. Exceto `auth`, exigem **JWT** (`Authorization: Bearer <token>`).
+
+| Recurso | Verbos | Descrição |
+|---------|--------|-----------|
+| `/api/auth/login` | POST | Autentica e retorna o token JWT |
+| `/api/usuarios` | GET, POST, PUT, DELETE | CRUD de usuários |
+| `/api/propriedades` | GET, POST, PUT, DELETE | CRUD de fazendas (**com HATEOAS**) |
+| `/api/talhoes` | GET, POST, PUT, DELETE | CRUD de talhões (**com HATEOAS**) |
+| `/api/culturas` | GET, POST, PUT, DELETE | CRUD de culturas |
+| `/api/sensores` | GET, POST, PUT, DELETE | CRUD de sensores |
+| `/api/leituras` | GET, POST, PUT, DELETE | Leituras de sensores |
+| `/api/dados-satelite` | GET, POST, PUT, DELETE | Dados de satélite |
+| `/api/alertas` | GET, POST, PUT, DELETE | Alertas agrícolas |
+| `/api/recomendacoes` | GET, POST, PUT, DELETE | Recomendações |
+| `/api/irrigacoes` | GET, POST, PUT, DELETE | Eventos de irrigação |
+| `/api/equipamentos` | GET | Equipamentos (demonstra **herança**) |
+
+> Verbos HTTP, **HTTP Status Codes** (201/200/204/400/404) e **HATEOAS** seguem os padrões REST.
+> Documentação completa e interativa no **Swagger** (link acima).
+
+---
+
+## 🧪 Testes (Postman)
+
+Coleção pronta no repositório: [`postman/AgroSat.postman_collection.json`](postman/AgroSat.postman_collection.json).
+
+**Como usar:**
+1. Postman → **Import** → selecione o arquivo `postman/AgroSat.postman_collection.json`.
+2. Rode **"1. Auth - Login"** — o token JWT é salvo automaticamente na variável `{{token}}`.
+3. Rode as demais requisições na ordem (CRUD de propriedades, validação, equipamentos…).
+4. A variável `{{baseUrl}}` já aponta para o deploy em nuvem (troque para `http://localhost:8080` se rodar local).
+
+**Exemplos (CRUD completo):**
+
+```http
+### 1) Login  ->  200 + token
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+{ "email": "admin@agrosat.com.br", "senha": "123456" }
+
+### 2) Criar (Create)  ->  201 Created (resposta com _links HATEOAS)
+POST {{baseUrl}}/api/propriedades
+Authorization: Bearer {{token}}
+{ "idUsuario": 1, "nome": "Fazenda Boa Vista", "municipio": "Ribeirao Preto", "uf": "SP", "areaTotalHa": 120.5 }
+
+### 3) Listar (Read)  ->  200
+GET {{baseUrl}}/api/propriedades        Authorization: Bearer {{token}}
+
+### 4) Atualizar (Update)  ->  200
+PUT {{baseUrl}}/api/propriedades/1
+Authorization: Bearer {{token}}
+{ "idUsuario": 1, "nome": "Fazenda Boa Vista (editada)", "areaTotalHa": 99.9 }
+
+### 5) Excluir (Delete)  ->  204 No Content
+DELETE {{baseUrl}}/api/propriedades/1   Authorization: Bearer {{token}}
+
+### 6) Validação  ->  400 Bad Request (campo obrigatório)
+POST {{baseUrl}}/api/propriedades
+Authorization: Bearer {{token}}
+{ "idUsuario": 1 }
+```
+
+---
+
+## ▶️ Como executar
+
+### Local (perfil H2 — sem instalar banco)
 ```bash
-# 1) Clonar o projeto
 git clone https://github.com/kaiky06301/agrosat-api-java.git
 cd agrosat-api-java
+mvn spring-boot:run -Dspring-boot.run.profiles=h2
+# Swagger: http://localhost:8080/swagger-ui/index.html
+# Login:   admin@agrosat.com.br / 123456 (criado automaticamente pelo seeder)
+```
 
-# 2) Gerar a imagem PERSONALIZADA da aplicação a partir do Dockerfile
+### Perfis disponíveis
+- `h2` — banco em memória (dev/teste rápido); cria o usuário admin automaticamente.
+- `postgres` — PostgreSQL (deploy em nuvem / containers).
+- `oracle` — Oracle FIAP (preencher credenciais em `application-oracle.properties`).
+
+---
+
+## 🐳 DevOps — rodar em nuvem (2 containers)
+
+Ambiente conteinerizado com **2 containers Docker** (API + PostgreSQL) na **mesma rede**, em **VM Linux
+na Azure** (não localhost). Imagem da aplicação gerada via Dockerfile (usuário **não-root**).
+
+```bash
+# 1) Imagem própria da aplicação
 docker build -t agrosat-api:566067 .
 
-# 3) Rede Docker e volume nomeado
+# 2) Rede + volume nomeado
 docker network create agrosat-net-566067
 docker volume  create pgdata-566067
 
-# 4) Container do BANCO (imagem pública, volume nomeado, env, porta, RM no nome)
+# 3) Container do BANCO (Postgres, volume nomeado, RM no nome)
 docker run -d --name agrosat-db-566067 --network agrosat-net-566067 \
   -e POSTGRES_DB=agrosat -e POSTGRES_USER=agrosat -e POSTGRES_PASSWORD=agrosat2026 \
   -v pgdata-566067:/var/lib/postgresql/data -p 5432:5432 postgres:16
 
-# 5) Container da APLICAÇÃO (imagem própria, não-root, env, porta, RM no nome, mesma rede)
+# 4) Container da APLICAÇÃO (imagem própria, não-root, mesma rede, RM no nome)
 docker run -d --name agrosat-app-566067 --network agrosat-net-566067 \
   -e SPRING_PROFILES_ACTIVE=postgres \
   -e SPRING_DATASOURCE_URL=jdbc:postgresql://agrosat-db-566067:5432/agrosat \
@@ -185,48 +417,24 @@ docker run -d --name agrosat-app-566067 --network agrosat-net-566067 \
   -e AGROSAT_JWT_SECRET=<sua-chave-256-bits> -e JAVA_OPTS="-Xms128m -Xmx384m" \
   -p 8080:8080 agrosat-api:566067
 
-# 6) Conferir os 2 containers em background + logs
+# 5) Evidências
 docker ps
-docker logs agrosat-db-566067
-docker logs agrosat-app-566067
-
-# 7) Entrar nos containers (docker exec): diretório e usuário
-docker exec agrosat-app-566067 sh -c "pwd; whoami; ls -l"   # -> /app | agrosat (não-root)
-docker exec -it agrosat-db-566067 psql -U agrosat -d agrosat -c "\dt"
-```
-
-## 🧪 Testes do CRUD na nuvem (substitua pelo IP público da VM)
-```bash
-BASE=http://<IP-PUBLICO-DA-VM>:8080
-
-# Login -> JWT (admin criado pelo seeder no 1º start)
-TOKEN=$(curl -s -X POST $BASE/api/auth/login -H "Content-Type: application/json" \
-  -d '{"email":"admin@agrosat.com.br","senha":"123456"}' | sed -E 's/.*"token":"([^"]+)".*/\1/')
-
-# CREATE / READ / UPDATE / DELETE de Propriedade
-curl -s -X POST   $BASE/api/propriedades   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{"idUsuario":1,"nome":"Fazenda Boa Vista","municipio":"Ribeirao Preto","uf":"SP","areaTotalHa":120.5}'
-curl -s            $BASE/api/propriedades   -H "Authorization: Bearer $TOKEN"
-curl -s -X PUT     $BASE/api/propriedades/1 -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{"idUsuario":1,"nome":"Fazenda Boa Vista (editada)","areaTotalHa":99.9}'
-curl -s -X DELETE  $BASE/api/propriedades/1 -H "Authorization: Bearer $TOKEN"
-```
-
-## 🔎 Evidência obrigatória — SELECT direto no banco (persistência em 2+ tabelas)
-```bash
+docker exec agrosat-app-566067 sh -c "pwd; whoami"   # /app | agrosat (não-root)
 docker exec -it agrosat-db-566067 psql -U agrosat -d agrosat \
-  -c "SELECT p.id_propriedade, p.nome AS fazenda, u.nome AS dono, u.email
-      FROM propriedade p JOIN usuario u ON u.id_usuario = p.id_usuario;"
+  -c "SELECT p.nome AS fazenda, u.nome AS dono FROM propriedade p JOIN usuario u ON u.id_usuario = p.id_usuario;"
 ```
 
-## ✅ Conformidade com os requisitos da disciplina
-- 2 containers em **nuvem** (não localhost), em **background**, na **mesma rede** Docker.
-- App: **imagem própria via Dockerfile**, **usuário não-root** (`agrosat`), **WORKDIR** `/app`,
-  **variável de ambiente**, **porta 8080** exposta, **RM no nome** (`agrosat-app-566067`).
-- Banco: **imagem pública** `postgres:16`, **volume nomeado** (`pgdata-566067`), **variável de ambiente**,
-  **porta 5432** exposta, **RM no nome** (`agrosat-db-566067`), **10 tabelas com relacionamentos**.
-- **CRUD completo** (Create/Read/Update/Delete) persistindo em **≥2 tabelas** (usuário ↔ propriedade).
-- Evidência de **SELECT** conectado diretamente no container do banco.
+> Alternativa: `docker compose up -d --build` (ver [`docker-compose.yml`](docker-compose.yml)).
+> Diagrama macro: [`arquitetura-devops.drawio`](arquitetura-devops.drawio).
 
-> Alternativa de execução: `docker compose up -d --build` usando o [`docker-compose.yml`](docker-compose.yml)
-> (sobe os mesmos 2 containers, app + Postgres, na mesma rede).
+---
+
+## 🛠️ Tecnologias
+
+**Java 17** · **Spring Boot 3.3** · Spring Web · **Spring Data JPA / Hibernate** · **Spring Security + JWT (jjwt)** ·
+**Spring HATEOAS** · Bean Validation · **Lombok** · **Spring Boot DevTools** · **springdoc/OpenAPI (Swagger)** ·
+Maven · **Docker** · **PostgreSQL / H2 / Oracle**.
+
+---
+
+Global Solution FIAP 2026/1 · Economia Espacial 🛰️🌱 · ODS 2, 8, 9, 13
