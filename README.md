@@ -5,6 +5,13 @@ API REST da disciplina **Java Advanced** — Global Solution FIAP 2026/1 (tema: 
 estimada, previsão de chuva) com **sensores ESP32 no campo** (umidade do solo, temperatura) e gera
 **alertas e recomendações de irrigação** por talhão. ODS 2, 8, 9 e 13.
 
+## 👥 Integrantes (Grupo 4 — Turma 2TDSR)
+- RM 565733 — Erick Bernardes Bradaschia
+- RM 564054 — Gabriel Santos Claudino
+- RM 565060 — Jonathan Moreira Gomes
+- RM 566067 — Kaiky de Oliveira Silva
+- RM 559523 — Lucas Fortes de Lima
+
 ---
 
 ## 📑 Sumário
