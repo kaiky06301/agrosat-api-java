@@ -4,8 +4,20 @@ API REST da disciplina **Java Advanced** (Global Solution FIAP 2026/1).
 **AgroSat** é agricultura de precisão: cruza dados de satélite (NDVI, umidade estimada, chuva)
 com sensores ESP32 no campo (umidade do solo, temperatura) e aciona irrigação/alertas. ODS 2, 8, 9, 13.
 
-> ☁️ **No ar (Azure):** https://agrosat-api-566067.azurewebsites.net/swagger-ui/index.html
-> — login `admin@agrosat.com.br` / `123456`. Detalhes do deploy em [`DEPLOY-NUVEM.md`](DEPLOY-NUVEM.md).
+## 📌 Links da entrega (Java Advanced)
+
+| Item | Link |
+|------|------|
+| 🌐 **Deploy público (Swagger)** | https://agrosat-api-566067.azurewebsites.net/swagger-ui/index.html |
+| 📄 **Documentação da API (OpenAPI)** | https://agrosat-api-566067.azurewebsites.net/v3/api-docs |
+| 🎥 **Vídeo de apresentação (YouTube)** | _COLE_AQUI_O_LINK_ |
+| 🎤 **Vídeo Pitch (YouTube)** | _COLE_AQUI_O_LINK_ |
+| 💻 **Repositório** | https://github.com/kaiky06301/agrosat-api-java |
+
+**Login de teste:** `admin@agrosat.com.br` / `123456` · Detalhes do deploy em [`DEPLOY-NUVEM.md`](DEPLOY-NUVEM.md).
+
+**Tecnologias:** Java 17 · Spring Boot 3.3 · Spring Data JPA · Spring Security + JWT · Spring HATEOAS ·
+Bean Validation · Lombok · Spring Boot DevTools · springdoc/OpenAPI · Maven · Docker · PostgreSQL/H2/Oracle.
 
 ## Stack
 
