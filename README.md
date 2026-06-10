@@ -435,6 +435,13 @@ docker exec -it agrosat-db-566067 psql -U agrosat -d agrosat \
 
 ### 🗺️ Desenho macro da arquitetura (nuvem)
 
+![Arquitetura macro da solução em nuvem — AgroSat (DevOps & Cloud Computing)](arquitetura-devops.png)
+
+> Diagrama oficial (draw.io). Formatos: [PNG](arquitetura-devops.png) · [SVG (vetorial)](arquitetura-devops.svg) · [PNG @2x (alta resolução)](arquitetura-devops@2x.png) · editável: [`arquitetura-devops.drawio`](arquitetura-devops.drawio).
+
+<details>
+<summary>Versão simplificada (Mermaid)</summary>
+
 ```mermaid
 flowchart LR
     U["👤 Usuário<br/>(navegador / app mobile)"]
@@ -454,9 +461,11 @@ flowchart LR
     NET -->|"porta 8080 exposta"| APP
 ```
 
+</details>
+
 **Fluxo:** o usuário acessa pela internet a **porta pública 8080** da VM → chega no container da **API Java**
 (não-root) → que conversa por **JDBC** com o container **PostgreSQL** na mesma rede Docker → os dados
-ficam num **volume nomeado** (persistem entre reinícios). Diagrama editável: [`arquitetura-devops.drawio`](arquitetura-devops.drawio).
+ficam num **volume nomeado** (persistem entre reinícios).
 
 ---
 
