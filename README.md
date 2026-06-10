@@ -432,7 +432,31 @@ docker exec -it agrosat-db-566067 psql -U agrosat -d agrosat \
 ```
 
 > Alternativa: `docker compose up -d --build` (ver [`docker-compose.yml`](docker-compose.yml)).
-> Diagrama macro: [`arquitetura-devops.drawio`](arquitetura-devops.drawio).
+
+### 🗺️ Desenho macro da arquitetura (nuvem)
+
+```mermaid
+flowchart LR
+    U["👤 Usuário<br/>(navegador / app mobile)"]
+    NET["🌐 Internet"]
+    U -->|"HTTPS / REST + JWT"| NET
+    subgraph CLOUD["☁️ Nuvem — VM Linux Ubuntu (Azure)"]
+      direction TB
+      subgraph DK["🐳 Docker — rede agrosat-net-566067"]
+        direction LR
+        APP["📦 agrosat-app-566067<br/>API Java (Spring Boot)<br/>porta 8080 · usuário NÃO-root"]
+        DB["📦 agrosat-db-566067<br/>PostgreSQL<br/>porta 5432"]
+        VOL[("💾 volume nomeado<br/>pgdata-566067")]
+        APP -->|"JDBC"| DB
+        DB --- VOL
+      end
+    end
+    NET -->|"porta 8080 exposta"| APP
+```
+
+**Fluxo:** o usuário acessa pela internet a **porta pública 8080** da VM → chega no container da **API Java**
+(não-root) → que conversa por **JDBC** com o container **PostgreSQL** na mesma rede Docker → os dados
+ficam num **volume nomeado** (persistem entre reinícios). Diagrama editável: [`arquitetura-devops.drawio`](arquitetura-devops.drawio).
 
 ---
 
